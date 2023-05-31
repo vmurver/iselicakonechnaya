@@ -6,60 +6,45 @@
 #include <algorithm>
 
 using namespace std;
-
-//структура слова с подсказкой
 struct word_hint {
-	string word;	//слово
-	string topic;	//тема
-	string hint;	//подсказка
+	string word;	
+	string topic;	
+	string hint;	
 };
-
-//структура игрока
 struct player {
 	string name;
 	int score;
 };
-
-//функция сравнения двух игроков для сортировки таблицы рекордов
 bool players_cmp(player p1, player p2) {
 	return p1.score > p2.score;
 }
-
-//структура игры
 struct game {
-	//имя для таблицы рекордов
 	player curPlayer;
 	vector<player> players;
-	string word;				//текущее слово, которое видит игрок игрока
-	vector <word_hint> words;	//базовый массив слов с подсказками
-	string mistakes;			//кол-во ошибок игрока
-
-	//конструктор по умолчанию для игры
+	string word;				
+	vector <word_hint> words;	
+	string mistakes;			
 	game() {
 		words = vector<word_hint>();
 		word = "";
 		mistakes = "";
 		curPlayer.score = 0;
-		cout << "Введите имя: "; cin >> curPlayer.name;
+		cout << "Р’РІРµРґРёС‚Рµ РёРјСЏ: "; cin >> curPlayer.name;
 		loadFromFiles();
 	}
-
-	//функция считывает из файла все базовые слова и подсказки
 	void loadFromFiles() {
-		words.clear();						//очищаем базовый массив слов и подсказок
-		ifstream fin("C:\\words_hints.txt");	//пытаемся открыть файл с указанным названием
-		word_hint temp;						//буферная переменная для заполнения базового массива слов с подсказками
-		if (fin.is_open()) {				//если удалось открыть файл
-			while (!fin.eof()) {			//пока не конец файла
-				fin >> temp.word;			//считываем само слово
-				fin >> temp.topic;			//считываем тему слова
-				getline(fin, temp.hint);	//далее считываем до конца строки позсказку
-				words.push_back(temp);		//добавляем данные в базу
+		words.clear();						
+		ifstream fin("C:\\words_hints.txt");	
+		word_hint temp;						
+		if (fin.is_open()) {				
+			while (!fin.eof()) {			
+				fin >> temp.word;			
+				fin >> temp.topic;			
+				getline(fin, temp.hint);	
+				words.push_back(temp);		
 			}
 		}
 		fin.close();
-
-		//аналогично заполняем таблицу рекордов
 		players.clear();
 		ifstream finr("records.in");
 		player player_temp;
@@ -68,7 +53,7 @@ struct game {
 				finr >> player_temp.name;
 				if (finr.eof()) break;
 				finr >> player_temp.score;
-				players.push_back(player_temp);	//добавляем данные в базу
+				players.push_back(player_temp);	
 			}
 		}
 		finr.close();
@@ -81,8 +66,6 @@ struct game {
 			fout << p.name << ' ' << p.score << '\n';
 		}
 	}
-
-	//функция вывода виселицы в соответствтие с кол-во ошибок
 	void printGallows(size_t m) {
 		cout << "---------------\n";
 		cout << "              |\n";
@@ -96,41 +79,32 @@ struct game {
 	}
 
 	void printRecords() {
-		cout << "\n\tТаблица рекордов\n";
+		cout << "\n\tРўР°Р±Р»РёС†Р° СЂРµРєРѕСЂРґРѕРІ\n";
 		printf("+----------------+--------+\n");
-		printf("|%16s|%8s|\n", "Имя", "Счёт");
+		printf("|%16s|%8s|\n", "РРјСЏ", "РЎС‡С‘С‚");
 		printf("+----------------+--------+\n");
 		for (player p : players) {
 			printf("|%16s|%8d|\n", p.name.c_str(), p.score);
 			printf("+----------------+--------+\n");
 		}
 	}
-
-	//функция вывода состояния игры для слова с индексом i из базы, с учетом уровня сложности
 	void printState(int ind, int lvl) {
 		cout << '\n';
 		printGallows(mistakes.size());
 
-		//выводим тему
 		if (lvl < 3) {
-			cout << "Тема раунда: " << words[ind].topic << '\n';
+			cout << "РўРµРјР° СЂР°СѓРЅРґР°: " << words[ind].topic << '\n';
 		}
-
-		//выводим слово
-		cout << "Слово: ";
-		for (char c : word) { cout << c << " "; } //перебираем все символы и выводим
-		cout << '\n'; //обозначаем конец строки
-
-		//выводим ошибки
-		cout << "Ошибки (" << mistakes.size() << "): ";
+		cout << "РЎР»РѕРІРѕ: ";
+		for (char c : word) { cout << c << " "; } 
+		cout << '\n';
+		cout << "РћС€РёР±РєРё (" << mistakes.size() << "): ";
 		for (size_t i = 0; i < mistakes.size(); ++i) {
 			cout << mistakes[i] << ' ';
 		}
 		cout << '\n';
-
-		//выводим напоминание о подсказке
 		if (lvl < 2) {
-			cout << "Чтобы использовать подсказку введите '?'\n";
+			cout << "Р§С‚РѕР±С‹ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РїРѕРґСЃРєР°Р·РєСѓ РІРІРµРґРёС‚Рµ '?'\n";
 		}
 	}
 
@@ -138,51 +112,48 @@ struct game {
 		if (c <= -1 && c >= -32) c -= 32;
 		return c;
 	}
-
-	//главная функция игрового процесса
 	void play() {
-		srand(time(NULL));											//устанавливаем случайное значение для генерации
-		int ind = rand() % int(words.size());						//случайно выбираем слово из базы
-
-		mistakes = "";												//очищаем все ошибки
-		word = "";													//очищаем текущее слово пользователя
-		for (size_t i = 0; i < words[ind].word.size(); ++i) {		//в цикле заполняем вместо всех букв знаки _
+		srand(time(NULL));											
+		int ind = rand() % int(words.size());						
+		mistakes = "";												
+		word = "";													
+		for (size_t i = 0; i < words[ind].word.size(); ++i) {		
 			word += '_';
 		}
 
 
-		int lvl;//уровень сложности
-		cout << "добро пожаловать в игру Виселица! Ваша задача угадать слово, заданное программой.Для начала вам нужно выбрать уровень сложности. В 1 уровне вам будем задана тема раунда и возможность использовать одну подсказку. Во 2 уровне вам будет дана только тема раунда. В 3 уровне никаких подсказок нет. Если вы ошибетесь , то рисунок виселицы дополнится одним элементом. В результате 6 ошибок вы проиграете , а если допустите меньше ошибок и угадаете слово , то вы выиграете! Удачной игры! " << endl;
-		cout << "(1:легко 2:средне 3:сложно)\n";
-		cout << "Введите уровень сложности: ";
-		cin >> lvl;													//вводится уровень
+		int lvl;//СѓСЂРѕРІРµРЅСЊ СЃР»РѕР¶РЅРѕСЃС‚Рё
+		cout << "РґРѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ РІ РёРіСЂСѓ Р’РёСЃРµР»РёС†Р°! Р’Р°С€Р° Р·Р°РґР°С‡Р° СѓРіР°РґР°С‚СЊ СЃР»РѕРІРѕ, Р·Р°РґР°РЅРЅРѕРµ РїСЂРѕРіСЂР°РјРјРѕР№.Р”Р»СЏ РЅР°С‡Р°Р»Р° РІР°Рј РЅСѓР¶РЅРѕ РІС‹Р±СЂР°С‚СЊ СѓСЂРѕРІРµРЅСЊ СЃР»РѕР¶РЅРѕСЃС‚Рё. Р’ 1 СѓСЂРѕРІРЅРµ РІР°Рј Р±СѓРґРµРј Р·Р°РґР°РЅР° С‚РµРјР° СЂР°СѓРЅРґР° Рё РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РѕРґРЅСѓ РїРѕРґСЃРєР°Р·РєСѓ. Р’Рѕ 2 СѓСЂРѕРІРЅРµ РІР°Рј Р±СѓРґРµС‚ РґР°РЅР° С‚РѕР»СЊРєРѕ С‚РµРјР° СЂР°СѓРЅРґР°. Р’ 3 СѓСЂРѕРІРЅРµ РЅРёРєР°РєРёС… РїРѕРґСЃРєР°Р·РѕРє РЅРµС‚. Р•СЃР»Рё РІС‹ РѕС€РёР±РµС‚РµСЃСЊ , С‚Рѕ СЂРёСЃСѓРЅРѕРє РІРёСЃРµР»РёС†С‹ РґРѕРїРѕР»РЅРёС‚СЃСЏ РѕРґРЅРёРј СЌР»РµРјРµРЅС‚РѕРј. Р’ СЂРµР·СѓР»СЊС‚Р°С‚Рµ 6 РѕС€РёР±РѕРє РІС‹ РїСЂРѕРёРіСЂР°РµС‚Рµ , Р° РµСЃР»Рё РґРѕРїСѓСЃС‚РёС‚Рµ РјРµРЅСЊС€Рµ РѕС€РёР±РѕРє Рё СѓРіР°РґР°РµС‚Рµ СЃР»РѕРІРѕ , С‚Рѕ РІС‹ РІС‹РёРіСЂР°РµС‚Рµ! РЈРґР°С‡РЅРѕР№ РёРіСЂС‹! " << endl;
+		cout << "(1:Р»РµРіРєРѕ 2:СЃСЂРµРґРЅРµ 3:СЃР»РѕР¶РЅРѕ)\n";
+		cout << "Р’РІРµРґРёС‚Рµ СѓСЂРѕРІРµРЅСЊ СЃР»РѕР¶РЅРѕСЃС‚Рё: ";
+		cin >> lvl;													
 		bool check = true;
 		bool hint = false;
-		string input;												//строка, которую вводит пользователь
+		string input;												
 
 		while (true) {
 			system("cls");
-			printState(ind, lvl);									//выводим текущую информацию об игре
+			printState(ind, lvl);									
 			if (!check) {
-				cout << "Нужно ввести русскую букву, которой еще не было!\n";
+				cout << "РќСѓР¶РЅРѕ РІРІРµСЃС‚Рё СЂСѓСЃСЃРєСѓСЋ Р±СѓРєРІСѓ, РєРѕС‚РѕСЂРѕР№ РµС‰Рµ РЅРµ Р±С‹Р»Рѕ!\n";
 			}
 			if (hint) {
-				cout << "Подсказка:" << words[ind].hint << '\n';	//выводим подсказку
+				cout << "РџРѕРґСЃРєР°Р·РєР°:" << words[ind].hint << '\n';	
 			}
-			cout << "Буква: "; cin >> input;						//пользователь вводит букву
-			if (lvl == 1 && input[0] == '?') {						//если пользователь запрашивает подсказку
+			cout << "Р‘СѓРєРІР°: "; cin >> input;						
+			if (lvl == 1 && input[0] == '?') {						
 				hint = true;
 				continue;
 			}
 
-			//проверка на корректный ввод
+			//РїСЂРѕРІРµСЂРєР° РЅР° РєРѕСЂСЂРµРєС‚РЅС‹Р№ РІРІРѕРґ
 			check = true;
-			if ((input[0] > -1 || input[0] < -64)) check = false;	//если ввели не букву, ввод не корректный
+			if ((input[0] > -1 || input[0] < -64)) check = false;	
 			for (size_t i = 0; i < word.size(); ++i) {
-				if (toUpper(input[0]) == word[i]) check = false;	//если ввели уже открытую букву
+				if (toUpper(input[0]) == word[i]) check = false;	
 			}
 			for (size_t i = 0; i < mistakes.size(); ++i) {
-				if (toUpper(input[0]) == mistakes[i]) check = false;	//если ввели букву, которая уже числится в ошибках
+				if (toUpper(input[0]) == mistakes[i]) check = false;	
 			}
 			if (!check) {
 				continue;
@@ -191,31 +162,31 @@ struct game {
 
 
 			bool miss = true;
-			for (size_t i = 0; i < words[ind].word.size(); ++i) {	//перебираем все буквы соответствующего слова из базы
-				if (toUpper(input[0]) == words[ind].word[i]) {		//если нашли совпадение буквы пользователя с i'ой буквой слова
-					word[i] = words[ind].word[i];					//открываем эти буквы в слове пользователя
-					miss = false;									//если нашли хотя бы одно совпадение, значит ошибки не было
+			for (size_t i = 0; i < words[ind].word.size(); ++i) {	
+				if (toUpper(input[0]) == words[ind].word[i]) {		
+					word[i] = words[ind].word[i];					
+					miss = false;									
 				}
 			}
 
-			if (miss) {												//если соответствующих букв в слове нет, добавляем к ошибкам
+			if (miss) {												
 				mistakes += toUpper(input[0]);
 			}
 
-			//если игрок совершает 6 ошибок, то он проиграл
+			//РµСЃР»Рё РёРіСЂРѕРє СЃРѕРІРµСЂС€Р°РµС‚ 6 РѕС€РёР±РѕРє, С‚Рѕ РѕРЅ РїСЂРѕРёРіСЂР°Р»
 			if (mistakes.size() == 6) {
-				cout << "Вы проиграли!\n";
+				cout << "Р’С‹ РїСЂРѕРёРіСЂР°Р»Рё!\n";
 				printGallows(6);
-				cout << "Загаданное слово: " << words[ind].word;
+				cout << "Р—Р°РіР°РґР°РЅРЅРѕРµ СЃР»РѕРІРѕ: " << words[ind].word;
 				break;
 			}
 
-			//игрок победил, если в слове win не осталось пустых букв _
+			//РёРіСЂРѕРє РїРѕР±РµРґРёР», РµСЃР»Рё РІ СЃР»РѕРІРµ win РЅРµ РѕСЃС‚Р°Р»РѕСЃСЊ РїСѓСЃС‚С‹С… Р±СѓРєРІ _
 			if (word.find('_') == string::npos) {
-				cout << "Вы выйграли!\n";
-				cout << "Загаданное слово: " << words[ind].word << '\n';
-				cout << "Ошибкок: " << mistakes.size() << '\n';
-				curPlayer.score = (6 - mistakes.size()) * lvl;	//подсчёт очков
+				cout << "Р’С‹ РІС‹Р№РіСЂР°Р»Рё!\n";
+				cout << "Р—Р°РіР°РґР°РЅРЅРѕРµ СЃР»РѕРІРѕ: " << words[ind].word << '\n';
+				cout << "РћС€РёР±РєРѕРє: " << mistakes.size() << '\n';
+				curPlayer.score = (6 - mistakes.size()) * lvl;	//РїРѕРґСЃС‡С‘С‚ РѕС‡РєРѕРІ
 				players.push_back(curPlayer);
 				sort(players.begin(), players.end(), players_cmp);
 				break;
@@ -228,11 +199,11 @@ struct game {
 };
 
 int main() {
-	//устанавливаем кодировку для кириллицы
+	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РєРѕРґРёСЂРѕРІРєСѓ РґР»СЏ РєРёСЂРёР»Р»РёС†С‹
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 
-	//создаем игру и запускаем ее
+	//СЃРѕР·РґР°РµРј РёРіСЂСѓ Рё Р·Р°РїСѓСЃРєР°РµРј РµРµ
 	game g;
 	g.play();
 
